@@ -6,5 +6,5 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root/backend"
 : "${DATABASE_URL:?Defina DATABASE_URL}"
 [ -d .venv ] || python3 -m venv .venv
-.venv/bin/pip install -q -e .
+[ -x .venv/bin/alembic ] || .venv/bin/python -m pip install -q -e .
 .venv/bin/alembic upgrade head

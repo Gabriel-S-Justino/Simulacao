@@ -5,5 +5,5 @@ if (-not $env:DATABASE_URL) { throw "Defina DATABASE_URL" }
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location "$root\backend"
 if (-not (Test-Path .venv)) { py -3.12 -m venv .venv }
-.\.venv\Scripts\pip install -q -e .
+if (-not (Test-Path .\.venv\Scripts\alembic.exe)) { .\.venv\Scripts\python -m pip install -q -e . }
 .\.venv\Scripts\alembic upgrade head
