@@ -71,8 +71,10 @@ Docker: `docker compose up --build` → app em http://localhost:8080, API em htt
 3. Em Environment Variables, defina `DATABASE_POOLING=false`, `CORS_ORIGINS=https://<seu-domínio>`,
    `APP_ENV=production` e `NASA_API_KEY` (chave pessoal de https://api.nasa.gov; sem ela APOD, NeoWs e
    DONKI ficam como "não configurado").
-4. Aplique as migrações com a URL direta do Neon (sem `-pooler`):
-   `DATABASE_URL=<url-direta> ./scripts/migrate.sh`.
+4. Aplique as migrações com a URL direta do Neon (`DATABASE_URL_UNPOOLED` em Settings → Environment
+   Variables da Vercel, sem `-pooler`). Requer Python 3.12 ou mais novo.
+   Linux/macOS: `DATABASE_URL='<url-direta>' ./scripts/migrate.sh`.
+   Windows (PowerShell): `$env:DATABASE_URL='<url-direta>'; .\scripts\migrate.ps1`.
 5. Confira `GET /api/v1/health` (`"database": "ok"`) e `GET /api/v1/sources` (fontes configuradas).
 
 Sem banco, a aplicação continua funcionando; apenas missões e checkpoints não são salvos.
