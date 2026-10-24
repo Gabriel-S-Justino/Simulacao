@@ -1,4 +1,4 @@
-"""Catálogo de componentes carregado de `data/catalogs/components.json`."""
+"""Catálogo de componentes empacotado em `app/catalogs/components.json`."""
 
 from __future__ import annotations
 
@@ -49,7 +49,7 @@ class Catalog(BaseModel):
         return {c.id: c for c in self.components}
 
 
-DEFAULT_CATALOG_PATH = Path(__file__).resolve().parents[4] / "data" / "catalogs" / "components.json"
+DEFAULT_CATALOG_PATH = Path(__file__).resolve().parents[2] / "catalogs" / "components.json"
 
 
 @lru_cache(maxsize=4)

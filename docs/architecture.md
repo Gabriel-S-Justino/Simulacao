@@ -13,8 +13,8 @@ frontend/ (React + TS estrito + Vite)            backend/ (FastAPI + Pydantic v2
   types/         contratos Zod                       propulsion/         Tsiolkovsky
                                                      spacecraft/         catálogo, avaliação
                                                    simulation/        propagador DOP853
-data/catalogs/   catálogo de componentes (JSON, fictício)
-api/index.py     entrada da função Python na Vercel
+backend/app/catalogs/   catálogo de componentes (JSON, fictício; empacotado com o app)
+vercel.json             Vercel Services: frontend (Vite) em /, backend (FastAPI) em /api/*
 ```
 
 O núcleo científico (`backend/app/domain`, `backend/app/simulation`) não depende de FastAPI e é testado
