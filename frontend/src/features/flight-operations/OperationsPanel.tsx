@@ -1,4 +1,5 @@
 import { playbackClock, useMission } from "../../stores/missionStore";
+import { Checkpoints } from "./Checkpoints";
 import { FrameStats } from "./FrameStats";
 import { duration, fmt, km } from "../../utils/format";
 
@@ -7,6 +8,8 @@ export function OperationsPanel() {
   const advanced = useMission((s) => s.advancedOpen);
   const toggleAdvanced = useMission((s) => s.toggleAdvanced);
   const setPhase = useMission((s) => s.setPhase);
+  const missionId = useMission((s) => s.missionId);
+  const resumed = useMission((s) => s.resumedFrom !== null);
   if (!sim) {
     return (
       <>
@@ -38,9 +41,9 @@ export function OperationsPanel() {
       )}
 
       <dl className="kv" style={{ margin: "12px 0" }}>
-        <dt>Delta-v executado</dt>
+        <dt>Delta-v executado{resumed && " (desde o checkpoint)"}</dt>
         <dd>{fmt(sim.delta_v_executed_ms, 1)} m/s</dd>
-        <dt>Propelente usado</dt>
+        <dt>Propelente usado{resumed && " (desde o checkpoint)"}</dt>
         <dd>{fmt(sim.propellant_used_kg, 2)} kg</dd>
         <dt>Massa final</dt>
         <dd>{fmt(sim.final_mass_kg, 2)} kg</dd>
@@ -65,6 +68,8 @@ export function OperationsPanel() {
           </li>
         ))}
       </ul>
+
+      {missionId && <Checkpoints missionId={missionId} />}
 
       <button className="link" onClick={toggleAdvanced} aria-expanded={advanced}>
         {advanced ? "Ocultar detalhes técnicos" : "Detalhes técnicos"}

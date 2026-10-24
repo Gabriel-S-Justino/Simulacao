@@ -20,7 +20,7 @@ export function TimeBar() {
         className="play"
         aria-label={playing ? "Pausar" : "Reproduzir"}
         onClick={() => {
-          if (atEnd) playbackClock.t = 0;
+          if (atEnd) playbackClock.t = track.t[0] ?? 0;
           setPlaying(!playing);
         }}
       >
@@ -35,9 +35,9 @@ export function TimeBar() {
         className="scrub"
         type="range"
         aria-label="Linha do tempo"
-        min={0}
+        min={track.t[0] ?? 0}
         max={track.duration}
-        step={track.duration / 2000}
+        step={(track.duration - (track.t[0] ?? 0)) / 2000}
         value={tel.t}
         onChange={(e) => (playbackClock.t = Number(e.target.value))}
       />

@@ -42,5 +42,26 @@ A nave é desenhada com escala visual ×1500 (indicada na tela). Coordenadas vis
 
 ## Persistência
 
-Ainda não implementada (próxima etapa). Plano: PostgreSQL com projetos, missões, planos, checkpoints
-(snapshot de estado + semente + versão do simulador + configuração física), eventos e relatórios.
+PostgreSQL via SQLAlchemy 2 (psycopg 3) e migrações Alembic (`backend/alembic`). Sem `DATABASE_URL`, as
+rotas de missões respondem 503 e o restante da API funciona (o frontend simula sem salvar).
+
+| Tabela | Conteúdo |
+|---|---|
+| `projects` | agência/projeto do jogador |
+| `missions` | projeto da nave, órbita inicial, objetivo, manobras, duração, configuração física (modelo, integrador, tolerâncias), semente, versão do simulador |
+| `checkpoints` | snapshot do estado físico num instante: posição, velocidade, massa e estágios restantes (propelente queimável, Isp, empuxo, massa descartável) |
+| `mission_runs` | relatório de cada execução: resumo, eventos, objetivo, diagnósticos (sem as amostras da trajetória) |
+
+Decisões:
+
+- A trajetória não é gravada passo a passo: é reproduzível a partir do plano, da versão do simulador, da
+  configuração física e da semente. Só os relatórios (até 20 por missão) e os checkpoints (até 50) são gravados.
+- Alterar o plano (projeto, órbita, objetivo, manobras, duração, semente ou integrador) remove checkpoints e
+  relatórios, que deixariam de corresponder à missão. Renomear não invalida.
+- Checkpoint gravado com outra versão do simulador não é retomado (409): é preciso replanejar.
+- Na Vercel, `DATABASE_POOLING=false` usa `NullPool`; o pooler do Neon gerencia as conexões.
+
+API (todas em `/api/v1`): `GET/POST /projects`; `GET/POST /missions`; `GET/PATCH/DELETE /missions/{id}`;
+`POST /missions/{id}/validate`, `/plan`, `/run`; `GET /missions/{id}/state`;
+`GET/POST /missions/{id}/checkpoints`; `POST /missions/{id}/checkpoints/{ck}/resume`;
+`GET /missions/{id}/reports`.

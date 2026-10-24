@@ -86,6 +86,7 @@ class SimResult:
     max_rel_h_drift: float
     terminated_early: bool
     nfev: int
+    final_stages: tuple[StageTank, ...]  # estágios restantes (cópias), para checkpoints
 
 
 def propagate(
@@ -98,9 +99,13 @@ def propagate(
     body_radius_m: float,
     n_samples: int = 1500,
     settings: IntegratorSettings | None = None,
+    t0: float = 0.0,
 ) -> SimResult:
+    """Propaga de `t0` até `t0 + duration_s`. Tempos de manobra são absolutos."""
     settings = settings or IntegratorSettings()
     settings.validate()
+    if not (math.isfinite(t0) and 0 <= t0 <= MAX_DURATION_S):
+        raise ValueError("Instante inicial inválido.")
     if not 0 < duration_s <= MAX_DURATION_S:
         raise ValueError(f"Duração deve estar em (0, {MAX_DURATION_S:.0f}] s.")
     if len(burns) > MAX_BURNS:
@@ -108,7 +113,7 @@ def propagate(
     if not MIN_SAMPLES <= n_samples <= MAX_SAMPLES:
         raise ValueError(f"Amostras devem estar em [{MIN_SAMPLES}, {MAX_SAMPLES}].")
     for b in burns:
-        if not 0 <= b.t <= duration_s:
+        if not t0 <= b.t <= t0 + duration_s:
             raise ValueError("Manobra fora do intervalo de simulação.")
         if not all(math.isfinite(x) for x in b.dv_vnb):
             raise ValueError("Delta-v de manobra inválido.")
@@ -125,8 +130,8 @@ def propagate(
     stage_idx = 0
 
     ordered = sorted(burns, key=lambda b: b.t)
-    boundaries = [0.0] + [b.t for b in ordered] + [duration_s]
-    grid = np.linspace(0.0, duration_s, n_samples)
+    boundaries = [t0] + [b.t for b in ordered] + [t0 + duration_s]
+    grid = np.linspace(t0, t0 + duration_s, n_samples)
 
     atol = np.array([settings.atol_position_m] * 3 + [settings.atol_velocity_ms] * 3)
 
@@ -219,6 +224,10 @@ def propagate(
         max_rel_h_drift=max_h_drift,
         terminated_early=terminated,
         nfev=nfev,
+        final_stages=tuple(
+            StageTank(s.name, s.burnable_kg, s.isp_s, s.thrust_n, s.jettison_mass_kg)
+            for s in stack[stage_idx:]
+        ),
     )
 
 

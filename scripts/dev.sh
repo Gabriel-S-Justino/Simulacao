@@ -5,6 +5,7 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root/backend"
 [ -d .venv ] || python3 -m venv .venv
 .venv/bin/pip install -q -e ".[dev]"
+[ -n "${DATABASE_URL:-}" ] && .venv/bin/alembic upgrade head
 .venv/bin/uvicorn app.main:app --reload --port 8000 &
 trap 'kill %1' EXIT
 cd "$root/frontend"

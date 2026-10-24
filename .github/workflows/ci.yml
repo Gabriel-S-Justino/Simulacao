@@ -8,6 +8,20 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ma
+          POSTGRES_PASSWORD: ma
+          POSTGRES_DB: mission_architect
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ma" --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ma:ma@localhost:5432/mission_architect
+      TEST_DATABASE_URL: postgresql://ma:ma@localhost:5432/mission_architect
     defaults:
       run:
         working-directory: backend
@@ -20,6 +34,8 @@ jobs:
       - run: ruff check app
       - run: ruff format --check app
       - run: mypy app --exclude app/tests
+      - name: Migrações (aplicar, conferir com os modelos e reverter)
+        run: alembic upgrade head && alembic check && alembic downgrade base
       - run: pytest -q
 
   frontend:
