@@ -22,7 +22,7 @@ O prompt pede FastAPI + PostgreSQL + Docker e "pronto para deploy na Vercel". Ab
 |---|---|---|---|
 | Local | Vite (5173) com proxy `/api` | Uvicorn (8000) | PostgreSQL via Docker Compose (etapa de persistência) |
 | Docker | nginx servindo o build, proxy `/api` | container Python 3.12 | idem |
-| Vercel | build estático de `frontend/` | `api/index.py` como função Python (FastAPI) | Postgres gerenciado (Neon via Marketplace) |
+| Vercel (Services) | serviço `frontend` (Vite) | serviço `backend` (FastAPI `app.main:app`) em `/api/*` | Postgres gerenciado (Neon via Marketplace) |
 
 Consequências na Vercel: funções têm tempo máximo (configurado em 60 s) e limite de pacote. Por isso o
 núcleo físico já impõe limites (30 dias simulados, 32 manobras, 6000 amostras) e propagações longas

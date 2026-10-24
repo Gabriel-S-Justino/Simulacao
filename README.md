@@ -64,8 +64,9 @@ Docker: `docker compose up --build` → app em http://localhost:8080, API em htt
 
 ## Deploy na Vercel com Neon
 
-1. Importe o repositório na Vercel (raiz do repositório). O build estático vem de `frontend/` e
-   `api/index.py` expõe o FastAPI como função Python em `/api/*` (ver `vercel.json`).
+1. Importe o repositório na Vercel com Root Directory `./` e Application Preset **Services**. O
+   `vercel.json` define dois serviços: `frontend` (Vite, em `/`) e `backend` (FastAPI `app.main:app`, em
+   `/api/*`). Importe o projeto inteiro, não "Import single project" de um serviço.
 2. Adicione o Neon pelo Marketplace da Vercel (Storage → Neon). Ele cria `DATABASE_URL` (com pooler).
 3. Em Environment Variables, defina `DATABASE_POOLING=false`, `CORS_ORIGINS=https://<seu-domínio>`,
    `APP_ENV=production` e `NASA_API_KEY` (chave pessoal de https://api.nasa.gov; sem ela APOD, NeoWs e
