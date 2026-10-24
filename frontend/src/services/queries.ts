@@ -42,3 +42,20 @@ export const useHohmann = (initialKm: number, targetKm: number, design: DesignIn
     retry: false,
   });
 };
+
+export const useHealth = () =>
+  useQuery({ queryKey: ["health"], queryFn: api.health, staleTime: 30_000, retry: 1 });
+
+/** Persistência disponível (backend com banco configurado e acessível). */
+export const usePersistence = () => useHealth().data?.database === "ok";
+
+export const useMissions = (enabled: boolean) =>
+  useQuery({ queryKey: ["missions"], queryFn: api.missions, enabled, retry: false });
+
+export const useCheckpoints = (missionId: string | null) =>
+  useQuery({
+    queryKey: ["checkpoints", missionId],
+    queryFn: () => api.checkpoints(missionId!),
+    enabled: missionId !== null,
+    retry: false,
+  });

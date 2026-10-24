@@ -15,11 +15,13 @@ Estado atual: **primeira fatia vertical** (ver `docs/plan.md` para o plano compl
 - Cena Three.js: Terra com camadas NASA GIBS (quando disponíveis), atmosfera, Sol na posição calculada,
   campo estelar ilustrativo, nave gerada a partir da montagem, trajetória e reprodução 1×–1000×.
 - Interface minimalista: três fases, painel recolhível, HUD de 4 indicadores, tela limpa (C).
+- Persistência em PostgreSQL: missões salvas, relatórios de execução e checkpoints que podem ser retomados
+  com resultado reprodutível.
 
 ## Tecnologias
 
 Frontend: React 19, TypeScript estrito, Vite, Three.js, React Three Fiber, Drei, Zustand, TanStack Query,
-Zod, Vitest, Testing Library. Backend: Python 3.12, FastAPI, Pydantic v2, NumPy, SciPy, Pytest, Ruff, mypy.
+Zod, Vitest, Testing Library. Backend: Python 3.12, FastAPI, Pydantic v2, NumPy, SciPy, SQLAlchemy 2, Alembic, PostgreSQL, Pytest, Ruff, mypy.
 
 ## Instalação e execução
 
@@ -56,11 +58,17 @@ Docker: `docker compose up --build` → app em http://localhost:8080, API em htt
 ./scripts/test.sh   # ruff, mypy, pytest, tsc, vitest, build
 ```
 
-## Deploy na Vercel
+## Deploy na Vercel com Neon
 
-O projeto Vercel usa a raiz do repositório: o build estático vem de `frontend/` e `api/index.py` expõe o
-FastAPI como função Python em `/api/*` (ver `vercel.json`). Configure `CORS_ORIGINS` com o domínio do
-deploy. A persistência usará Postgres gerenciado (Neon) na próxima etapa.
+1. Importe o repositório na Vercel (raiz do repositório). O build estático vem de `frontend/` e
+   `api/index.py` expõe o FastAPI como função Python em `/api/*` (ver `vercel.json`).
+2. Adicione o Neon pelo Marketplace da Vercel (Storage → Neon). Ele cria `DATABASE_URL` (com pooler).
+3. Em Environment Variables, defina `DATABASE_POOLING=false` e `CORS_ORIGINS=https://<seu-domínio>`.
+4. Aplique as migrações com a URL direta do Neon (sem `-pooler`):
+   `DATABASE_URL=<url-direta> ./scripts/migrate.sh`.
+5. Confira `GET /api/v1/health`: `"database": "ok"`.
+
+Sem banco, a aplicação continua funcionando; apenas missões e checkpoints não são salvos.
 
 ## Documentação
 

@@ -11,5 +11,8 @@
 4. **Câmera**: Nave / Terra no topo. Arraste para orbitar e role para aproximar. A nave é desenhada
    ampliada (×1500); a física usa dimensões reais.
 5. **Tela limpa**: tecla C ou botão no topo.
+6. **Missões e checkpoints** (com banco configurado): ao simular, a missão é salva e aparece em
+   Planejamento → Missões salvas. Em Operações, "Salvar checkpoint no instante atual" grava o estado físico
+   naquele momento; "Retomar" continua a simulação a partir dele. Mudar a nave ou o plano cria uma nova missão.
 
 Todos os componentes do catálogo atual são fictícios.

@@ -198,3 +198,70 @@ export interface SimulateIn {
   n_samples?: number;
   objective?: { kind: "circular_orbit"; target_altitude_m: number; tolerance_m: number };
 }
+
+// --- Persistência (missões e checkpoints) ---
+
+export const HealthSchema = z.object({
+  status: z.string(),
+  version: z.string(),
+  database: z.enum(["ok", "unavailable", "not_configured"]),
+});
+
+export const ProjectSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  created_at: z.string(),
+  mission_count: z.number(),
+});
+
+const PartSchema = z.object({
+  component_id: z.string(),
+  quantity: z.number(),
+  propellant_kg: z.number().nullable().optional(),
+});
+
+export const MissionSchema = z.object({
+  id: z.string(),
+  project_id: z.string(),
+  name: z.string(),
+  status: z.enum(["draft", "simulated"]),
+  design: z.object({ stages: z.array(z.object({ name: z.string(), parts: z.array(PartSchema) })) }),
+  initial_orbit: z.object({ altitude_m: z.number(), inclination_deg: z.number() }),
+  objective: z
+    .object({ kind: z.literal("circular_orbit"), target_altitude_m: z.number(), tolerance_m: z.number() })
+    .nullable(),
+  burns: z.array(BurnSchema),
+  duration_s: z.number(),
+  seed: z.number(),
+  simulator_version: z.string(),
+  updated_at: z.string(),
+  checkpoint_count: z.number(),
+  run_count: z.number(),
+});
+export type Mission = z.infer<typeof MissionSchema>;
+
+export const CheckpointSchema = z.object({
+  id: z.string(),
+  mission_id: z.string(),
+  label: z.string(),
+  t_s: z.number(),
+  state: z.object({ t_s: z.number(), mass_kg: z.number() }),
+  simulator_version: z.string(),
+  created_at: z.string(),
+});
+export type Checkpoint = z.infer<typeof CheckpointSchema>;
+
+export const MissionRunSchema = z.object({
+  run_id: z.string(),
+  from_checkpoint_id: z.string().nullable(),
+  simulation: SimulationSchema,
+});
+export type MissionRun = z.infer<typeof MissionRunSchema>;
+
+export interface MissionIn {
+  project_id: string;
+  name: string;
+  design: DesignIn;
+  initial_orbit: { altitude_m: number; inclination_deg: number };
+  objective: { kind: "circular_orbit"; target_altitude_m: number; tolerance_m: number };
+}

@@ -94,7 +94,7 @@ class SimEventOut(BaseModel):
 
 class ObjectiveOut(BaseModel):
     achieved: bool
-    periapsis_error_m: float
+    periapsis_error_m: float | None
     apoapsis_error_m: float | None
     tolerance_m: float
 

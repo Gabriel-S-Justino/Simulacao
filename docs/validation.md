@@ -1,6 +1,7 @@
 # Validação científica
 
-Executar: `cd backend && .venv/bin/pytest -q` (46 testes, ~2 s).
+Executar: `cd backend && .venv/bin/pytest -q` (55 testes, ~3 s). Com `TEST_DATABASE_URL` apontando para
+um PostgreSQL, os testes de persistência rodam nele (no CI, PostgreSQL 16); sem ela, em SQLite temporário.
 
 | Teste | Referência | Tolerância | Resultado |
 |---|---|---|---|
@@ -24,6 +25,10 @@ Executar: `cd backend && .venv/bin/pytest -q` (46 testes, ~2 s).
 | Queima de reentrada termina em impacto | |r| = R⊕ | 1 m | passa |
 | Mudança de plano pura (1°) | geometria | 1e-12 rad | passa |
 | Entradas inválidas/ilimitadas rejeitadas | — | — | passa |
+| Mesma missão executada duas vezes | determinismo | trajetória idêntica bit a bit | passa |
+| Retomada de checkpoint no meio da transferência e no instante da 2ª queima | execução completa | massa final 1e-12 rel; a e periapsis 1 m | passa |
+| Checkpoint de outra versão do simulador | — | recusado (409) | passa |
+| Migração Alembic × modelos | `alembic check` | sem diferenças | passa (PostgreSQL 16) |
 
 Frontend (`cd frontend && npm test`): interpolação Hermite (erro relativo < 1e-4 com 16 amostras por
 órbita; amostras do núcleo reproduzidas exatamente; estado pós-queima em tempos repetidos), GMST em J2000,

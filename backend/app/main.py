@@ -8,6 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 
+from app.api.v1.missions import router as missions_router
 from app.api.v1.routes import router
 from app.core.config import get_settings
 from app.core.logging import configure_logging
@@ -28,7 +29,7 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
-        allow_methods=["GET", "POST"],
+        allow_methods=["GET", "POST", "PATCH", "DELETE"],
         allow_headers=["Content-Type"],
     )
 
@@ -67,6 +68,7 @@ def create_app() -> FastAPI:
         return JSONResponse({"detail": "Falha interna do núcleo de simulação."}, status_code=500)
 
     app.include_router(router)
+    app.include_router(missions_router)
     return app
 
 

@@ -4,13 +4,16 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # .env na raiz do repositório (desenvolvimento) ou no diretório atual.
+    model_config = SettingsConfigDict(env_file=("../.env", ".env"), extra="ignore")
 
     app_env: str = "development"
     log_level: str = "INFO"
     cors_origins: str = "http://localhost:5173"
     max_request_bytes: int = 256 * 1024
     database_url: str | None = None
+    # False na Vercel: conexões sem pool local (NullPool), adequado a funções serverless.
+    database_pooling: bool = True
 
     @property
     def cors_origin_list(self) -> list[str]:

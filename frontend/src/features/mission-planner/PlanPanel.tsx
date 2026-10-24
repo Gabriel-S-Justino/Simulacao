@@ -1,36 +1,53 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Metric } from "../../components/Metric";
 import { api } from "../../services/api";
-import { useHohmann } from "../../services/queries";
+import { OBJECTIVE_TOLERANCE_M, saveAndRun } from "../../services/missionFlow";
+import { useHohmann, usePersistence } from "../../services/queries";
+import { SavedMissions } from "./SavedMissions";
 import { designFromParts, useMission } from "../../stores/missionStore";
 import { duration, fmt } from "../../utils/format";
-
-const TOLERANCE_M = 1000;
 
 export function PlanPanel() {
   const parts = useMission((s) => s.parts);
   const plan = useMission((s) => s.plan);
   const setPlan = useMission((s) => s.setPlan);
   const loadSimulation = useMission((s) => s.loadSimulation);
+  const missionId = useMission((s) => s.missionId);
+  const setMissionId = useMission((s) => s.setMissionId);
+  const persistence = usePersistence();
+  const queryClient = useQueryClient();
   const design = useMemo(() => designFromParts(parts), [parts]);
   const hohmann = useHohmann(plan.initialAltitudeKm, plan.targetAltitudeKm, design);
   const h = hohmann.data;
   const f = h?.feasibility;
 
   const simulate = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       if (!h) throw new Error("Plano indisponível.");
-      return api.simulate({
+      if (persistence) {
+        const { missionId: id, run } = await saveAndRun(design, plan, missionId);
+        return { simulation: run.simulation, missionId: id };
+      }
+      const simulation = await api.simulate({
         design,
         initial_orbit: { altitude_m: plan.initialAltitudeKm * 1000, inclination_deg: plan.inclinationDeg },
         burns: h.burns,
         duration_s: h.suggested_duration_s,
         n_samples: 2000,
-        objective: { kind: "circular_orbit", target_altitude_m: plan.targetAltitudeKm * 1000, tolerance_m: TOLERANCE_M },
+        objective: {
+          kind: "circular_orbit",
+          target_altitude_m: plan.targetAltitudeKm * 1000,
+          tolerance_m: OBJECTIVE_TOLERANCE_M,
+        },
       });
+      return { simulation, missionId: null };
     },
-    onSuccess: loadSimulation,
+    onSuccess: ({ simulation, missionId: id }) => {
+      loadSimulation(simulation);
+      setMissionId(id);
+      void queryClient.invalidateQueries({ queryKey: ["missions"] });
+    },
   });
 
   return (
@@ -98,6 +115,14 @@ export function PlanPanel() {
         {simulate.isPending ? "Simulando…" : f && !f.feasible ? "Simular mesmo assim" : "Lançar simulação"}
       </button>
       {simulate.isError && <p className="note" style={{ color: "var(--error)" }}>{simulate.error.message}</p>}
+      <p className="note">
+        {persistence
+          ? missionId
+            ? "Missão salva. A simulação usa o plano gravado."
+            : "A missão será salva ao simular."
+          : "Banco indisponível: a simulação não será salva."}
+      </p>
+      {persistence && <SavedMissions />}
       {h && (
         <p className="note">
           Transferência de Hohmann: {h.provenance.assumptions.join(" · ").toLowerCase()}.

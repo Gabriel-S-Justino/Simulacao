@@ -13,6 +13,8 @@ A estrutura proposta no prompt mestre (seção 18) foi adotada com duas adaptaç
 
 ## 2. Decisão de deploy (Vercel × FastAPI/PostgreSQL/Docker)
 
+**Decidido em 2026-10-24: tudo na Vercel com Neon Postgres.**
+
 O prompt pede FastAPI + PostgreSQL + Docker e "pronto para deploy na Vercel". Abordagem adotada
 (reversível, sem mudanças de código para trocar):
 
@@ -31,8 +33,8 @@ para Render/Fly.io sem alteração de código; só muda a variável `VITE_API_BA
 
 | # | Entrega | Critério de aceite |
 |---|---|---|
-| 1 (este PR) | Fatia vertical: montar nave → Δv por estágio → plano Hohmann → propagação DOP853 → trajetória 3D → objetivo validado | 46 testes científicos/API e 10 de frontend passam; fluxo ponta a ponta verificado em navegador |
-| 2 | Persistência: PostgreSQL, SQLAlchemy 2, Alembic; projetos, missões, checkpoints (snapshot + semente + versão) | missão salva/restaurada reproduz o mesmo estado bit a bit |
+| 1 (feito) | Fatia vertical: montar nave → Δv por estágio → plano Hohmann → propagação DOP853 → trajetória 3D → objetivo validado | 46 testes científicos/API e 10 de frontend passam; fluxo ponta a ponta verificado em navegador |
+| 2 (feito) | Persistência: PostgreSQL, SQLAlchemy 2, Alembic; projetos, missões, checkpoints (snapshot + semente + versão), relatórios | mesma missão → trajetória idêntica bit a bit; retomada de checkpoint → massa exata e órbita final a 1 m |
 | 3 | Integrações (8 adaptadores) com contrato comum §4.9, cache, timeouts, testes isolados com respostas gravadas | cada adaptador testado com: ok, timeout, HTTP 4xx/5xx, payload inválido, cache, dado desatualizado |
 | 4 | Efemérides JPL Horizons + Sol/Lua reais na cena; Astropy para escalas de tempo (UTC/TDB) e referenciais (ICRF/eclíptica) | comparação com Horizons dentro de tolerância documentada |
 | 5 | Comandos e operações: queimas finitas, energia (eclipse, orientação dos painéis), telecom (link budget, latência), atitude simplificada | comandos alteram estado físico e cena; energia nunca negativa silenciosamente |

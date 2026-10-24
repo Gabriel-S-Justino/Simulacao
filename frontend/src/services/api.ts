@@ -1,6 +1,12 @@
-import type { z } from "zod";
+import { z } from "zod";
 import {
   CatalogSchema,
+  CheckpointSchema,
+  HealthSchema,
+  MissionRunSchema,
+  MissionSchema,
+  ProjectSchema,
+  type MissionIn,
   DesignReportSchema,
   HohmannSchema,
   SimulationSchema,
@@ -63,4 +69,27 @@ export const api = {
   ) => request(HohmannSchema, "/api/v1/planning/hohmann", post(body, signal)),
   simulate: (body: SimulateIn) =>
     request(SimulationSchema, "/api/v1/simulations/propagate", post(body)),
+
+  health: () => request(HealthSchema, "/api/v1/health"),
+  projects: () => request(z.array(ProjectSchema), "/api/v1/projects"),
+  createProject: (name: string) => request(ProjectSchema, "/api/v1/projects", post({ name })),
+  missions: () => request(z.array(MissionSchema), "/api/v1/missions"),
+  createMission: (body: MissionIn) => request(MissionSchema, "/api/v1/missions", post(body)),
+  deleteMission: (id: string) =>
+    fetch(`${BASE}/api/v1/missions/${id}`, { method: "DELETE" }).then((r) => {
+      if (!r.ok) throw new ApiError(`Erro ${r.status}`, r.status);
+    }),
+  planMission: (id: string) => request(MissionSchema, `/api/v1/missions/${id}/plan`, post({})),
+  runMission: (id: string, n_samples = 2000) =>
+    request(MissionRunSchema, `/api/v1/missions/${id}/run`, post({ n_samples })),
+  checkpoints: (id: string) =>
+    request(z.array(CheckpointSchema), `/api/v1/missions/${id}/checkpoints`),
+  createCheckpoint: (id: string, t_s: number, label: string) =>
+    request(CheckpointSchema, `/api/v1/missions/${id}/checkpoints`, post({ t_s, label })),
+  resume: (id: string, checkpointId: string, n_samples = 2000) =>
+    request(
+      MissionRunSchema,
+      `/api/v1/missions/${id}/checkpoints/${checkpointId}/resume`,
+      post({ n_samples }),
+    ),
 };

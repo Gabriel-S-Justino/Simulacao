@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { DesignIn, HohmannPlan, Simulation } from "../types/contracts";
+import type { DesignIn, HohmannPlan, Mission, Simulation } from "../types/contracts";
 import { toTrack, type Track } from "../rendering/playback";
 
 export type Phase = "assembly" | "planning" | "operations";
@@ -40,6 +40,10 @@ interface MissionState {
   hohmann: HohmannPlan | null;
   simulation: Simulation | null;
   track: Track | null;
+  /** Missão salva que corresponde à configuração atual (null = não salva ou alterada). */
+  missionId: string | null;
+  /** Checkpoint de onde a simulação exibida foi retomada. */
+  resumedFrom: { id: string; t_s: number } | null;
   epochMs: number;
   playing: boolean;
   timeScale: number;
@@ -51,7 +55,9 @@ interface MissionState {
   setPropellant: (id: string, kg: number) => void;
   setPlan: (patch: Partial<PlanParams>) => void;
   setHohmann: (h: HohmannPlan | null) => void;
-  loadSimulation: (s: Simulation) => void;
+  loadSimulation: (s: Simulation, resumedFrom?: { id: string; t_s: number } | null) => void;
+  setMissionId: (id: string | null) => void;
+  loadMission: (m: Mission) => void;
   setPlaying: (p: boolean) => void;
   setTimeScale: (s: number) => void;
 }
@@ -66,6 +72,8 @@ export const useMission = create<MissionState>((set) => ({
   hohmann: null,
   simulation: null,
   track: null,
+  missionId: null,
+  resumedFrom: null,
   epochMs: Date.now(),
   playing: false,
   timeScale: 100,
@@ -78,19 +86,48 @@ export const useMission = create<MissionState>((set) => ({
       const parts = { ...s.parts };
       if (quantity <= 0) delete parts[id];
       else parts[id] = { ...parts[id], quantity: Math.min(quantity, 32) };
-      return { parts, hohmann: null };
+      return { parts, hohmann: null, missionId: null };
     }),
   setPropellant: (id, kg) =>
     set((s) => {
       const current = s.parts[id];
       if (!current) return s;
-      return { parts: { ...s.parts, [id]: { ...current, propellant_kg: kg } }, hohmann: null };
+      return {
+        parts: { ...s.parts, [id]: { ...current, propellant_kg: kg } },
+        hohmann: null,
+        missionId: null,
+      };
     }),
-  setPlan: (patch) => set((s) => ({ plan: { ...s.plan, ...patch }, hohmann: null })),
+  setPlan: (patch) => set((s) => ({ plan: { ...s.plan, ...patch }, hohmann: null, missionId: null })),
   setHohmann: (hohmann) => set({ hohmann }),
-  loadSimulation: (simulation) => {
-    playbackClock.t = 0;
-    set({ simulation, track: toTrack(simulation), epochMs: Date.now(), playing: true, phase: "operations" });
+  loadSimulation: (simulation, resumedFrom = null) => {
+    const track = toTrack(simulation);
+    playbackClock.t = track.t[0] ?? 0;
+    set({ simulation, track, resumedFrom, epochMs: Date.now(), playing: true, phase: "operations" });
+  },
+  setMissionId: (missionId) => set({ missionId }),
+  loadMission: (m) => {
+    const parts: Record<string, PartState> = {};
+    for (const p of m.design.stages[0]?.parts ?? []) {
+      parts[p.component_id] = {
+        quantity: p.quantity,
+        ...(p.propellant_kg != null ? { propellant_kg: p.propellant_kg } : {}),
+      };
+    }
+    set({
+      parts,
+      plan: {
+        initialAltitudeKm: m.initial_orbit.altitude_m / 1000,
+        targetAltitudeKm: (m.objective?.target_altitude_m ?? m.initial_orbit.altitude_m) / 1000,
+        inclinationDeg: m.initial_orbit.inclination_deg,
+      },
+      hohmann: null,
+      simulation: null,
+      track: null,
+      resumedFrom: null,
+      missionId: m.id,
+      phase: "planning",
+    });
   },
   setPlaying: (playing) => set({ playing }),
   setTimeScale: (timeScale) => set({ timeScale }),
