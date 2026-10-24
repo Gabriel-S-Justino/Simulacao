@@ -38,3 +38,14 @@ export function sunDirectionEci(date: Date): [number, number, number] {
   const eps = (23.439 - 4e-7 * n) * deg;
   return [Math.cos(lambda), Math.cos(eps) * Math.sin(lambda), Math.sin(eps) * Math.sin(lambda)];
 }
+
+/**
+ * Latitude/longitude geográficas → posição no referencial local da Terra na cena
+ * (o grupo que gira com o GMST). Segue o mapeamento UV da SphereGeometry do Three.js
+ * com textura equiretangular: longitude 0 em +X local, 90° E em −Z local (= +Y do ECEF).
+ */
+export function geoToEarthLocal(latDeg: number, lonDeg: number, radius: number): [number, number, number] {
+  const lat = (latDeg * Math.PI) / 180;
+  const phi = ((lonDeg + 180) * Math.PI) / 180;
+  return [-Math.cos(phi) * Math.cos(lat) * radius, Math.sin(lat) * radius, Math.sin(phi) * Math.cos(lat) * radius];
+}

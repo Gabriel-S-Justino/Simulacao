@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { FlightHud } from "../features/flight-operations/FlightHud";
+import { LivePanel } from "../features/live-data/LivePanel";
 import { SidePanel } from "../features/mission-control/SidePanel";
 import { TimeBar } from "../features/mission-control/TimeBar";
 import { TopBar } from "../features/mission-control/TopBar";
@@ -13,6 +14,7 @@ export function App({ webgl2 = hasWebGL2() }: { webgl2?: boolean }) {
   const clean = useMission((s) => s.cleanMode);
   const toggleClean = useMission((s) => s.toggleClean);
   const focus = useView((s) => s.focus);
+  const liveOpen = useView((s) => s.liveOpen);
   const [contextLost, setContextLost] = useState(false);
 
   useEffect(() => {
@@ -52,7 +54,8 @@ export function App({ webgl2 = hasWebGL2() }: { webgl2?: boolean }) {
       </div>
       <TopBar />
       <SidePanel />
-      <FlightHud />
+      {/* O painel de dados externos ocupa o canto do HUD enquanto aberto. */}
+      {liveOpen ? <LivePanel /> : <FlightHud />}
       <TimeBar />
       {focus === "craft" && !clean && (
         <span className="scale-badge" title="Escala visual; a física usa as dimensões reais">

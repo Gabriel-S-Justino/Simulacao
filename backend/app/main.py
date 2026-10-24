@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse, Response
 
 from app.api.v1.missions import router as missions_router
 from app.api.v1.routes import router
+from app.api.v1.sources import router as sources_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging
 from app.core.version import SIMULATOR_VERSION
@@ -69,6 +70,7 @@ def create_app() -> FastAPI:
 
     app.include_router(router)
     app.include_router(missions_router)
+    app.include_router(sources_router)
     return app
 
 

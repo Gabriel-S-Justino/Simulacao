@@ -5,6 +5,8 @@
 ```
 frontend/ (React + TS estrito + Vite)            backend/ (FastAPI + Pydantic v2)
   features/      painéis por fase                  api/v1/routes.py   endpoints versionados
+                                                   api/v1/sources.py  fontes externas (envelope §4.9)
+                                                   integrations/      adaptadores HTTP, cache, stale
   rendering/     cena Three.js (R3F)               services/flight.py orquestra projeto→plano→voo
   services/      cliente HTTP + TanStack Query     domain/            física pura, sem I/O
   stores/        Zustand (UI) + relógio mutável      orbital_mechanics/  elementos, manobras

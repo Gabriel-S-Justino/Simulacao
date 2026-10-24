@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 import * as THREE from "three";
 import { playbackClock, useMission } from "../../stores/missionStore";
 import { QUALITY_DPR, useView } from "../../stores/viewStore";
-import { Earth } from "../celestial-bodies/Earth";
+import { useEarthEvents, useGibsLayers, useIssPosition } from "../../services/queries";
+import { Earth, type DaySource } from "../celestial-bodies/Earth";
+import { EventMarkers, IssMarker } from "../celestial-bodies/GeoMarkers";
+import { BLUE_MARBLE, VIIRS_DAILY } from "../celestial-bodies/gibs";
 import { updateCraftPosition } from "../craftPosition";
 import { sunDirectionEci } from "../frames";
 import { OrbitPath } from "../orbits/OrbitPath";
@@ -38,6 +41,19 @@ export function SceneRoot({ onContextLost }: { onContextLost: (lost: boolean) =>
   const phase = useMission((s) => s.phase);
   const { dpr, autoQuality, quality, setDpr } = useView();
   const [, setFlips] = useState(0);
+  const { showEvents, showIss, dayLayer } = useView();
+  // Consultas fora do Canvas; a cena recebe só os dados já validados.
+  const events = useEarthEvents(showEvents).data?.data;
+  const iss = useIssPosition(showIss).data?.data;
+  const gibs = useGibsLayers(dayLayer === "viirs-daily").data?.data;
+  const viirsDate = gibs?.layers.find((l) => l.id === VIIRS_DAILY.id)?.latest_date;
+  const day = useMemo<DaySource>(
+    () =>
+      dayLayer === "viirs-daily" && viirsDate
+        ? { layer: VIIRS_DAILY, time: viirsDate }
+        : { layer: BLUE_MARBLE },
+    [dayLayer, viirsDate],
+  );
 
   return (
     <Canvas
@@ -71,7 +87,10 @@ export function SceneRoot({ onContextLost }: { onContextLost: (lost: boolean) =>
       <Ticker sunDir={sunDir} />
       <Sun direction={sunDir} />
       <Starfield />
-      <Earth sunDir={sunDir} />
+      <Earth sunDir={sunDir} day={day}>
+        {showEvents && events && <EventMarkers events={events} />}
+        {showIss && iss && <IssMarker lat={iss.lat_deg} lon={iss.lon_deg} />}
+      </Earth>
       {track ? <OrbitPath track={track} /> : phase === "planning" && <PlannedOrbits />}
       <Spacecraft sunDir={sunDir} />
       <CameraRig sunDir={sunDir} />
