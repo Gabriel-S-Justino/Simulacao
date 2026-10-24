@@ -17,6 +17,10 @@ Estado atual: **primeira fatia vertical** (ver `docs/plan.md` para o plano compl
 - Interface minimalista: três fases, painel recolhível, HUD de 4 indicadores, tela limpa (C).
 - Persistência em PostgreSQL: missões salvas, relatórios de execução e checkpoints que podem ser retomados
   com resultado reprodutível.
+- Fontes científicas externas pelo backend (GIBS, EPIC, DONKI, EONET, JPL Horizons/SBDB/CAD, APOD, NeoWs,
+  Open Notify), todas com o envelope §4.9, cache e indicação de dado desatualizado. Na interface, o painel
+  "Dados externos" mostra eventos naturais e a ISS no globo, clima espacial e a textura diária VIIRS.
+  Ver `docs/api-integrations.md` (verificação ao vivo ainda pendente).
 
 ## Tecnologias
 
@@ -63,10 +67,12 @@ Docker: `docker compose up --build` → app em http://localhost:8080, API em htt
 1. Importe o repositório na Vercel (raiz do repositório). O build estático vem de `frontend/` e
    `api/index.py` expõe o FastAPI como função Python em `/api/*` (ver `vercel.json`).
 2. Adicione o Neon pelo Marketplace da Vercel (Storage → Neon). Ele cria `DATABASE_URL` (com pooler).
-3. Em Environment Variables, defina `DATABASE_POOLING=false` e `CORS_ORIGINS=https://<seu-domínio>`.
+3. Em Environment Variables, defina `DATABASE_POOLING=false`, `CORS_ORIGINS=https://<seu-domínio>`,
+   `APP_ENV=production` e `NASA_API_KEY` (chave pessoal de https://api.nasa.gov; sem ela APOD, NeoWs e
+   DONKI ficam como "não configurado").
 4. Aplique as migrações com a URL direta do Neon (sem `-pooler`):
    `DATABASE_URL=<url-direta> ./scripts/migrate.sh`.
-5. Confira `GET /api/v1/health`: `"database": "ok"`.
+5. Confira `GET /api/v1/health` (`"database": "ok"`) e `GET /api/v1/sources` (fontes configuradas).
 
 Sem banco, a aplicação continua funcionando; apenas missões e checkpoints não são salvos.
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { gmst, sunDirectionEci } from "../rendering/frames";
+import { geoToEarthLocal, gmst, sunDirectionEci } from "../rendering/frames";
 import { duration } from "../utils/format";
 
 describe("frames", () => {
@@ -18,6 +18,14 @@ describe("frames", () => {
   it("Sol no solstício de junho tem declinação ≈ +23,44°", () => {
     const [, , z] = sunDirectionEci(new Date(Date.UTC(2024, 5, 20, 20, 51)));
     expect((Math.asin(z) * 180) / Math.PI).toBeCloseTo(23.44, 1);
+  });
+
+  it("lat/lon → referencial local da Terra (UV da SphereGeometry)", () => {
+    const close = (a: number[], b: number[]) => a.forEach((v, i) => expect(v).toBeCloseTo(b[i]!, 12));
+    close(geoToEarthLocal(0, 0, 1), [1, 0, 0]); // Greenwich no equador → +X
+    close(geoToEarthLocal(0, 90, 1), [0, 0, -1]); // 90° E → −Z local (= +Y ECEF)
+    close(geoToEarthLocal(90, 0, 2), [0, 2, 0]); // polo norte → +Y
+    close(geoToEarthLocal(0, -180, 1), [-1, 0, 0]);
   });
 
   it("formata durações", () => {

@@ -59,3 +59,41 @@ export const useCheckpoints = (missionId: string | null) =>
     enabled: missionId !== null,
     retry: false,
   });
+
+// ---------- Fontes externas ----------
+
+export const useIssPosition = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["iss"],
+    queryFn: api.issPosition,
+    enabled,
+    refetchInterval: 15_000,
+    retry: false,
+  });
+
+export const useEarthEvents = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["earth-events"],
+    queryFn: () => api.earthEvents(),
+    enabled,
+    staleTime: 10 * 60_000,
+    retry: false,
+  });
+
+export const useSpaceWeather = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["space-weather"],
+    queryFn: () => api.spaceWeather(),
+    enabled,
+    staleTime: 10 * 60_000,
+    retry: false,
+  });
+
+export const useGibsLayers = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["gibs-layers"],
+    queryFn: api.gibsLayers,
+    enabled,
+    staleTime: 60 * 60_000,
+    retry: false,
+  });

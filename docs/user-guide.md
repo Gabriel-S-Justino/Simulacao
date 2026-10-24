@@ -14,5 +14,10 @@
 6. **Missões e checkpoints** (com banco configurado): ao simular, a missão é salva e aparece em
    Planejamento → Missões salvas. Em Operações, "Salvar checkpoint no instante atual" grava o estado físico
    naquele momento; "Retomar" continua a simulação a partir dele. Mudar a nave ou o plano cria uma nova missão.
+7. **Dados externos** (botão no topo): liga eventos naturais (EONET) e o subponto da ISS no globo, troca a
+   textura diurna para a imagem VIIRS do dia mais recente publicado pela GIBS e resume o clima espacial dos
+   últimos 7 dias (DONKI). Cada item mostra a fonte, o estado e há quanto tempo o dado foi obtido; se a
+   fonte estiver fora do ar, aparece "indisponível" e nenhum valor é exibido. Enquanto o painel está aberto,
+   ele ocupa o lugar do HUD de voo.
 
 Todos os componentes do catálogo atual são fictícios.

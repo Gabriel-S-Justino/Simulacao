@@ -11,7 +11,7 @@ export interface GibsLayer {
   id: string;
   title: string;
   format: "image/jpeg" | "image/png";
-  temporal: false;
+  temporal: boolean;
   note: string;
 }
 
@@ -31,7 +31,17 @@ export const BLACK_MARBLE: GibsLayer = {
   note: "Composição anual de 2016.",
 };
 
-export function gibsWmsUrl(layer: GibsLayer, width = 4096): string {
+export const VIIRS_DAILY: GibsLayer = {
+  id: "VIIRS_SNPP_CorrectedReflectance_TrueColor",
+  title: "VIIRS Suomi NPP, cor verdadeira (diária)",
+  format: "image/jpeg",
+  temporal: true,
+  note: "Mosaico diário de passagens; faixas sem dados entre órbitas são normais.",
+};
+
+/** `time` (YYYY-MM-DD) é obrigatório para camadas temporais e vem do catálogo do backend. */
+export function gibsWmsUrl(layer: GibsLayer, width = 4096, time?: string): string {
+  if (layer.temporal && !time) throw new Error(`Camada temporal ${layer.id} exige data`);
   const params = new URLSearchParams({
     SERVICE: "WMS",
     REQUEST: "GetMap",
@@ -43,5 +53,6 @@ export function gibsWmsUrl(layer: GibsLayer, width = 4096): string {
     HEIGHT: String(width / 2),
     FORMAT: layer.format,
   });
+  if (layer.temporal && time) params.set("TIME", time);
   return `${GIBS_BASE}/wms/epsg4326/best/wms.cgi?${params.toString()}`;
 }

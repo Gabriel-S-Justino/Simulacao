@@ -15,6 +15,8 @@ export function TopBar() {
   const toggleClean = useMission((s) => s.toggleClean);
   const focus = useView((s) => s.focus);
   const setFocus = useView((s) => s.setFocus);
+  const liveOpen = useView((s) => s.liveOpen);
+  const toggleLive = useView((s) => s.toggleLive);
 
   return (
     <header className="topbar">
@@ -40,6 +42,9 @@ export function TopBar() {
           Terra
         </button>
       </div>
+      <button className="chip" aria-pressed={liveOpen} onClick={toggleLive} title="Dados de fontes externas">
+        Dados externos
+      </button>
       <button className="chip" aria-pressed={clean} onClick={toggleClean} title="Modo cinematográfico (C)">
         {clean ? "Sair da tela limpa" : "Tela limpa"}
       </button>

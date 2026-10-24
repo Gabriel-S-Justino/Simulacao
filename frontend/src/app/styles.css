@@ -167,6 +167,26 @@ input { font: inherit; }
 .fallback h1 { font-weight: 500; font-size: 18px; }
 .fallback p { color: var(--muted); max-width: 420px; }
 
+/* Dados externos (canto superior direito) */
+.live {
+  position: absolute; top: 64px; right: 16px; width: 320px; max-height: calc(100% - 160px);
+  background: var(--glass); backdrop-filter: blur(18px) saturate(1.2);
+  border: 1px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; z-index: 5;
+}
+.toggle { display: flex; align-items: center; gap: 8px; padding: 6px 0; cursor: pointer; color: var(--text); }
+.toggle input { accent-color: var(--accent); }
+.src { padding: 0 0 8px 24px; }
+.src-list { display: grid; gap: 2px; margin-top: 8px; }
+.src-status { display: block; font-size: 11px; color: var(--faint); }
+.src-status::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; background: var(--faint); transform: translateY(-1px); }
+.src-status[data-status="ok"]::before { background: var(--ok); }
+.src-status[data-status="stale"]::before { background: var(--warn); }
+.src-status[data-status="error"]::before, .src-status[data-status="not_configured"]::before { background: var(--error); }
+.legend { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--muted); }
+.legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+.select { background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 7px; color: var(--text); padding: 4px 6px; font-size: 12px; }
+
+.clean .live,
 .clean .panel, .clean .collapse, .clean .hud, .clean .nav { opacity: 0; pointer-events: none; }
 .clean .timebar { opacity: 0.35; }
 .clean .timebar:hover { opacity: 1; }
@@ -175,6 +195,7 @@ input { font: inherit; }
   .panel { width: auto; right: 16px; top: auto; height: 46%; bottom: 84px; }
   .panel[data-open="false"] { transform: translateY(110%); }
   .hud { display: none; }
+  .live { left: 16px; right: 16px; width: auto; max-height: 50%; }
   .nav button { padding: 6px 8px; }
   .topbar { gap: 10px; padding: 0 12px; }
   .brand { display: none; }

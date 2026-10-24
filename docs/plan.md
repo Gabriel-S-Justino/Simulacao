@@ -35,7 +35,7 @@ para Render/Fly.io sem alteração de código; só muda a variável `VITE_API_BA
 |---|---|---|
 | 1 (feito) | Fatia vertical: montar nave → Δv por estágio → plano Hohmann → propagação DOP853 → trajetória 3D → objetivo validado | 46 testes científicos/API e 10 de frontend passam; fluxo ponta a ponta verificado em navegador |
 | 2 (feito) | Persistência: PostgreSQL, SQLAlchemy 2, Alembic; projetos, missões, checkpoints (snapshot + semente + versão), relatórios | mesma missão → trajetória idêntica bit a bit; retomada de checkpoint → massa exata e órbita final a 1 m |
-| 3 | Integrações (8 adaptadores) com contrato comum §4.9, cache, timeouts, testes isolados com respostas gravadas | cada adaptador testado com: ok, timeout, HTTP 4xx/5xx, payload inválido, cache, dado desatualizado |
+| 3 (feito, verificação ao vivo pendente) | Integrações (8 fontes, 10 endpoints) com contrato comum §4.9, cache, timeouts, testes isolados com respostas montadas a partir da documentação oficial | cliente comum testado com ok, timeout, conexão, HTTP 401/403/404/429/4xx/5xx, payload inválido, limite de tamanho, cache, dado desatualizado; cada adaptador testado com payload documentado e casos de erro próprios. Ver `api-integrations.md` |
 | 4 | Efemérides JPL Horizons + Sol/Lua reais na cena; Astropy para escalas de tempo (UTC/TDB) e referenciais (ICRF/eclíptica) | comparação com Horizons dentro de tolerância documentada |
 | 5 | Comandos e operações: queimas finitas, energia (eclipse, orientação dos painéis), telecom (link budget, latência), atitude simplificada | comandos alteram estado físico e cena; energia nunca negativa silenciosamente |
 | 6 | Planejamento avançado: Lambert (Izzo), janelas, porkchop, perturbações J2/arrasto como módulos | casos de referência publicados reproduzidos |
@@ -61,7 +61,7 @@ para Render/Fly.io sem alteração de código; só muda a variável `VITE_API_BA
 | NumPy 2.x | Mantida | BSD-3 | Vetores, estados |
 | SciPy 1.18 (`solve_ivp`, DOP853) | Mantida | BSD-3 | Integração numérica com controle de erro |
 | Astropy | Mantida | BSD-3 | Escalas de tempo, referenciais, unidades (etapa 4) |
-| sgp4 / Skyfield | Mantidas | MIT | Propagação de TLE da ISS (etapa 3) |
+| sgp4 / Skyfield | Mantidas | MIT | Ainda não usadas: a ISS vem do Open Notify (subponto); TLE + SGP4 fica para quando a ISS entrar na física |
 | poliastro | **Arquivada em 2023** | MIT | Não usada |
 | hapsira (fork do poliastro) | Manutenção incerta | MIT | Não usada; algoritmos implementados e testados localmente |
 | lamberthub | Ativa | **GPL-3** | Não usada por licença; Lambert (Izzo 2015) será implementado e validado |
@@ -83,7 +83,8 @@ API versionada em `/api/v1`, OpenAPI em `/api/docs`. Unidades SI em todos os cam
 | `POST /simulations/propagate` | projeto, órbita inicial, manobras (VNB), duração, objetivo | trajetória amostrada, eventos, órbitas inicial/final, objetivo, diagnósticos numéricos, `provenance` |
 
 `provenance` traz `source`, `kind` (`calculated`/`observed`/`approximation`/`synthetic`), modelo,
-referencial, unidades e hipóteses. Os adaptadores externos seguirão o contrato §4.9 completo.
+referencial, unidades e hipóteses. Os adaptadores externos usam o envelope §4.9 completo
+(`api-integrations.md`).
 
 Fontes de verdade: posição e massa da nave vêm do propagador; o frontend apenas interpola (Hermite cúbica)
 entre amostras para exibição. Direção do Sol e rotação da Terra são calculadas no frontend somente para

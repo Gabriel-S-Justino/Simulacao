@@ -13,6 +13,12 @@ import {
   type DesignIn,
   type SimulateIn,
 } from "../types/contracts";
+import {
+  EarthEventsEnvelopeSchema,
+  GibsCatalogSchema,
+  IssEnvelopeSchema,
+  SpaceWeatherSchema,
+} from "../types/sources";
 
 const BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "";
 
@@ -92,4 +98,11 @@ export const api = {
       `/api/v1/missions/${id}/checkpoints/${checkpointId}/resume`,
       post({ n_samples }),
     ),
+
+  // Fontes externas: o backend sempre responde com o envelope §4.9.
+  issPosition: () => request(IssEnvelopeSchema, "/api/v1/iss/position"),
+  earthEvents: (days = 30, limit = 200) =>
+    request(EarthEventsEnvelopeSchema, `/api/v1/events/earth?days=${days}&limit=${limit}`),
+  spaceWeather: (days = 7) => request(SpaceWeatherSchema, `/api/v1/events/space-weather?days=${days}`),
+  gibsLayers: () => request(GibsCatalogSchema, "/api/v1/earth/imagery/layers"),
 };
